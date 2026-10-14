@@ -66,6 +66,58 @@ Evaluaremos **Essentia** como herramienta candidata para el análisis musical, a
 
 El punto de partida será utilizar modelos preentrenados. Las herramientas, modelos, almacenamiento e interfaz definitivos se elegirán después de comprobar su viabilidad sobre una muestra pequeña. El entrenamiento desde cero queda fuera de la propuesta inicial.
 
+### Categorías del análisis musical
+
+Evaluaremos el modelo preentrenado **MTG-Jamendo mood/theme**, disponible en Essentia, que ofrece clasificación multietiqueta en **56 categorías de estado de ánimo y temática**. Una canción podrá tener puntuaciones en varias etiquetas.
+
+Para mostrar su utilidad, podemos agrupar algunos ejemplos así; esta agrupación es explicativa y no sustituye las clases del modelo:
+
+| Tipo de descripción | Ejemplos de etiquetas |
+| --- | --- |
+| Emoción y estado de ánimo | `happy`, `sad`, `melancholic`, `hopeful`, `romantic` |
+| Energía y carácter | `energetic`, `calm`, `relaxing`, `powerful`, `groovy` |
+| Contexto y uso | `party`, `sport`, `background`, `advertising`, `corporate` |
+| Temática y ambientación | `adventure`, `film`, `game`, `nature`, `space` |
+
+Las 56 etiquetas son:
+
+```text
+action, adventure, advertising, background, ballad, calm, children,
+christmas, commercial, cool, corporate, dark, deep, documentary,
+drama, dramatic, dream, emotional, energetic, epic, fast, film, fun,
+funny, game, groovy, happy, heavy, holiday, hopeful, inspiring, love,
+meditative, melancholic, melodic, motivational, movie, nature, party,
+positive, powerful, relaxing, retro, romantic, sad, sexy, slow, soft,
+soundscape, space, sport, summer, trailer, travel, upbeat, uplifting
+```
+
+También evaluaremos modelos específicos de **valencia y activación**, que producen dos valores continuos:
+
+| Dimensión | Interpretación |
+| --- | --- |
+| Valencia (*valence*) | Carácter emocional de negativo a positivo. |
+| Activación (*arousal*) | Nivel de activación de calma a excitación. |
+
+Estos dos valores proceden de modelos distintos del clasificador de 56 etiquetas. Género, instrumentos o bailabilidad requerirán igualmente los modelos correspondientes; el BPM se obtendrá mediante análisis rítmico. La selección definitiva dependerá de las pruebas.
+
+Referencia técnica: [catálogo oficial de modelos de Essentia](https://essentia.upf.edu/models.html).
+
+### Base de datos vectorial y búsqueda por similitud
+
+La **base de datos vectorial** almacenará una representación numérica de cada canción y permitirá recuperar las más cercanas a los temas de referencia. Asociado a cada vector se conservará el identificador de la canción y los metadatos necesarios para filtrar y explicar los resultados.
+
+Evaluaremos dos representaciones complementarias:
+
+- **Embeddings de audio:** vectores obtenidos del modelo para comparar características sonoras.
+- **Perfiles de etiquetas:** vectores con las puntuaciones de las 56 categorías; exploraremos añadir valencia y activación normalizadas para formar un perfil de 58 dimensiones.
+
+El perfil de 58 dimensiones es una propuesta de diseño, no un embedding único que devuelva el clasificador. Compararemos las representaciones y sus ponderaciones antes de decidir cómo indexarlas.
+
+Ante una consulta, el asistente identificará las referencias y restricciones, recuperará candidatos por similitud y aplicará filtros como BPM y exclusión de los temas de referencia. El modelo de lenguaje explicará la selección utilizando los datos recuperados.
+
+Así podremos explorar consultas como «temas con un perfil emocional parecido a este» o «similares, pero más tranquilos», siempre que la evaluación respalde esa interpretación. La tecnología de base de datos y la métrica de similitud quedan pendientes de elección.
+
+
 ## Plan de trabajo
 
 | Fase | Resultado esperado |
