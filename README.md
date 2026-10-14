@@ -12,6 +12,7 @@ DJ Copilot es un proyecto académico desarrollado en equipo en el marco del **pr
 
 Preparar una sesión requiere escuchar, revisar y comparar muchas canciones. Cuando la biblioteca crece, localizar los temas que encajan con el estilo del DJ y la intención de la sesión consume cada vez más tiempo.
 
+
 Los filtros habituales —artista, género, año o BPM— son útiles, pero no representan por completo una petición como «algo parecido a este tema, con más energía». Además, los metadatos pueden estar incompletos y el etiquetado manual exige dedicación.
 
 Queremos facilitar esa exploración combinando análisis automático de audio, búsqueda por similitud e interacción conversacional. **La selección final seguirá siendo del DJ.**
