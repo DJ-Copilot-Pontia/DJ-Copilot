@@ -1,5 +1,7 @@
 # DJ Copilot 🎧
 
+![DJ Copilot: robot con auriculares y mesa de mezclas](assets/dj-copilot.png)
+
 **Asistente de inteligencia artificial para explorar y preseleccionar música mediante lenguaje natural.**
 
 DJ Copilot es un proyecto académico desarrollado en equipo en el marco del **proyecto Júpiter de Pontia**. Nuestro objetivo es construir y evaluar un prototipo que ayude a un DJ a encontrar canciones de su colección musical a partir de temas de referencia y peticiones expresadas con sus propias palabras.
