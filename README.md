@@ -160,3 +160,7 @@ Documentos de referencia del equipo, sujetos a sus permisos de acceso:
 ## Datos y licencias
 
 Las decisiones sobre datos, privacidad, licencias de modelos y propiedad intelectual formarán parte del diseño. El repositorio no incluirá archivos musicales ni credenciales. La licencia del código está pendiente de definición por el equipo.
+
+## Arquitectura del repositorio
+
+El proyecto dispone de un esqueleto documental de carpetas, todavía sin código de aplicación. Consulta la [arquitectura propuesta](docs/architecture.md) y los README de [API](api/README.md), [pruebas](tests/README.md), [documentación](docs/README.md) y [recursos gráficos](assets/README.md). Cada carpeta explica su responsabilidad y los componentes previstos.
