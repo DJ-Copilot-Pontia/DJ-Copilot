@@ -1,0 +1,40 @@
+services: 
+
+  backend: 
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: miApp
+
+    ports: 
+      - "8080:8000"
+
+    environment: 
+      MONGO_URI: mongodb://mongodb:27017
+      MONGO_DB: djcopilot
+
+    depends_on: 
+      - mongodb
+
+    networks: 
+      - miRedData
+  
+  mongodb:
+    image: mongo:8
+
+    container_name: miMongo
+
+    volumes: 
+      - vol_data:/data/db
+
+    networks: 
+      - miRedData
+
+volumes: 
+  vol_data:
+
+
+networks: 
+  miRedData:
+    driver: bridge
