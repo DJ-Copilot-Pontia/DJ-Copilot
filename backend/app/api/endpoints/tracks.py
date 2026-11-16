@@ -1,12 +1,20 @@
 """
 Define los endpoints HTTP relacionados
-con las canciones (tracks)
+con las canciones (tracks) y sus metadatos.
 """
 
+from bson import ObjectId
+from fastapi import APIRouter, HTTPException, Depends, status
+from sqlalchemy.orm import Session
+
+# Importaciones de MongoDB (Lógica original)
 from app.database.mongo import tracks_collection
 from app.schemas.track import TrackCreate
-from bson import ObjectId
-from fastapi import APIRouter, HTTPException
+
+# Importaciones de PostgreSQL (Tu lógica de metadatos)
+from app.database.postgres import get_db
+from app.database.models import TrackMetadata
+from app.schemas.track import TrackMetadataCreate
 
 # Agrupa los endpoints relacionados
 # con las canciones
@@ -30,6 +38,7 @@ def get_tracks():
         tracks.append(track)
 
     return tracks
+
 
 @tracks_router.get("/tracks/{track_id}")
 def get_track(track_id: str):
@@ -126,3 +135,52 @@ def delete_track(track_id: str):
         )
 
     return {"message":"Track deleted"}
+
+
+#############################################
+#  Endpoints Metadatos Essentia (PostgreSQL)#
+#############################################
+
+@tracks_router.get("/tracks/{track_id}/exists", response_model=dict)
+def check_track_exists(track_id: str, db: Session = Depends(get_db)):
+    """
+    Consulta si una canción ya ha sido analizada por Essentia y 
+    sus metadatos están almacenados en PostgreSQL.
+    """
+    track = db.query(TrackMetadata).filter(TrackMetadata.id == track_id).first()
+    return {"exists": track is not None}
+
+
+@tracks_router.post("/tracks/metadata", status_code=status.HTTP_201_CREATED)
+def save_track_metadata(metadata: TrackMetadataCreate, db: Session = Depends(get_db)):
+    """
+    Recibe los metadatos musicales extraídos por Essentia y 
+    los almacena en la base de datos relacional.
+    """
+    # Comprobamos si la canción ya existe para evitar duplicados
+    existing_track = db.query(TrackMetadata).filter(TrackMetadata.id == metadata.id).first()
+    if existing_track:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Los metadatos de esta canción ya existen en la base de datos"
+        )
+
+    # Mapeamos los datos validados del Schema al Modelo de SQLAlchemy
+    new_track = TrackMetadata(
+        id=metadata.id,
+        title=metadata.title,
+        artist=metadata.artist,
+        year=metadata.year,
+        genre=metadata.genre,
+        bpm=metadata.bpm,
+        valence=metadata.valence,
+        arousal=metadata.arousal,
+        tags_scores=metadata.tags_scores
+    )
+    
+    # Insertamos la información en PostgreSQL
+    db.add(new_track)
+    db.commit()
+    db.refresh(new_track)
+    
+    return {"message": "Metadatos almacenados correctamente", "track_id": new_track.id}

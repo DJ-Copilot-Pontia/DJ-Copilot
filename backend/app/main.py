@@ -9,9 +9,12 @@ Uvicorn cuando se ejecuta en local.
 import uvicorn
 from fastapi import FastAPI
 from app.api.router import api_router
+from app.database.postgres import engine
+from app.database import models
 
 # Crea la aplicación FastAPI que procesará
 # las peticiones HTTP recibidas por la API.
+models.Base.metadata.create_all(bind=engine)
 app = FastAPI(title="DJ-Copilot API")  
 
 # Registra en la aplicación los endpoints

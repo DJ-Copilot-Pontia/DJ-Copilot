@@ -6,6 +6,7 @@ que devuelve.
 """
 
 from pydantic import BaseModel
+from typing import Optional, Dict
 
 class TrackCreate(BaseModel):
     """
@@ -17,3 +18,16 @@ class TrackCreate(BaseModel):
     artist: str
     genre: str
     bpm: int
+
+
+class TrackMetadataCreate(BaseModel):
+    id: str
+    title: Optional[str] = None
+    artist: Optional[str] = None
+    year: Optional[int] = None
+    genre: Optional[str] = None
+    bpm: Optional[float] = None
+    valence: Optional[float] = None
+    arousal: Optional[float] = None
+    # Diccionario dinámico para las 56 etiquetas de Essentia
+    tags_scores: Optional[Dict[str, float]] = None
