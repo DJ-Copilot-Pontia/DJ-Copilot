@@ -1,39 +1,46 @@
 services: 
-
   backend: 
     build:
       context: ./backend
       dockerfile: Dockerfile
-
     container_name: miApp
-
+    restart: on-failure
     ports: 
-      - "8080:8000"
-
-    environment: 
-      MONGO_URI: mongodb://mongodb:27017
-      MONGO_DB: djcopilot
-
+      - "8081:8000"
+    env_file:
+      - .env
     depends_on: 
       - mongodb
-
+      - postgres
     networks: 
       - miRedData
   
   mongodb:
-    image: mongo:8
-
+    image: mongo:4.4
     container_name: miMongo
-
     volumes: 
       - vol_data:/data/db
-
     networks: 
+      - miRedData
+
+  postgres:
+    image: postgres:15
+    container_name: djcopilot_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: djcopilot
+      POSTGRES_PASSWORD: djcopilot_password
+      POSTGRES_DB: djcopilot_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
       - miRedData
 
 volumes: 
   vol_data:
-
+  postgres_data: 
 
 networks: 
   miRedData:
