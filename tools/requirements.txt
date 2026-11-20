@@ -1,0 +1,12 @@
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch>=2.5
+torchaudio>=2.5
+# Con transformers 5.x, el código remoto de MERT-v1 devuelve hidden_states = None.
+transformers>=4.40,<5
+soundfile>=0.12
+numpy>=1.26
+# Sin nnAudio, el código remoto de MERT imprime un aviso al importarse; MERT-v1 no activa el CQT que lo usa.
+nnAudio>=0.3.3
+fastapi>=0.115
+uvicorn>=0.30
+requests>=2.32

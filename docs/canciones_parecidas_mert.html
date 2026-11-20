@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Canciones parecidas según MERT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Lista de canciones a la izquierda; a la derecha, la canción elegida y sus vecinas con 95M y 330M en dos columnas. */
+:root {
+  --fondo: #f4f5f2;
+  --superficie: #ffffff;
+  --texto: #1d2321;
+  --texto-suave: #5d6763;
+  --borde: #d9ddd8;
+  --acento: #0f6e66;
+  --afro: #b4531f;
+  --deep: #2d5fa8;
+  --organic: #4f7d2a;
+  --fuente-titulo: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --fuente-texto: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --fuente-mono: "IBM Plex Mono", Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fondo: #141917;
+    --superficie: #1c2220;
+    --texto: #e6ebe8;
+    --texto-suave: #9aa59f;
+    --borde: #2f3835;
+    --acento: #4fc2b6;
+    --afro: #ec8a52;
+    --deep: #7aa6ec;
+    --organic: #95c467;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --fondo: #141917;
+  --superficie: #1c2220;
+  --texto: #e6ebe8;
+  --texto-suave: #9aa59f;
+  --borde: #2f3835;
+  --acento: #4fc2b6;
+  --afro: #ec8a52;
+  --deep: #7aa6ec;
+  --organic: #95c467;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--fuente-texto);
+  font-size: 15px;
+  line-height: 1.45;
+}
+header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--borde);
+  display: grid;
+  gap: 12px;
+}
+h1 {
+  font-family: var(--fuente-titulo);
+  font-weight: 700;
+  font-size: 24px;
+  margin: 0;
+  text-wrap: balance;
+}
+.explicacion { margin: 0; color: var(--texto-suave); max-width: 80ch; }
+.resumen { display: flex; flex-wrap: wrap; gap: 12px; }
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: grid;
+  gap: 4px;
+  min-width: 220px;
+}
+.tarjeta .etiqueta { font-size: 12px; color: var(--texto-suave); text-transform: uppercase; letter-spacing: .04em; }
+.tarjeta .cifra { font-family: var(--fuente-mono); font-size: 22px; font-variant-numeric: tabular-nums; }
+.tarjeta .detalle { font-size: 13px; color: var(--texto-suave); font-variant-numeric: tabular-nums; }
+main {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  gap: 0;
+  min-height: 70vh;
+}
+nav {
+  border-right: 1px solid var(--borde);
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+label[for="buscar"] { font-size: 13px; color: var(--texto-suave); }
+#buscar {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--borde);
+  border-radius: 4px;
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+}
+#buscar:focus-visible, button:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+.grupo h2 {
+  font-family: var(--fuente-titulo);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin: 8px 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.grupo ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.grupo button {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--texto);
+  font: inherit;
+  font-size: 14px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+.grupo button:hover { background: var(--superficie); }
+.grupo button[aria-current="true"] { background: var(--superficie); border-left-color: var(--acento); font-weight: 600; }
+.punto { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+.afro { --color-genero: var(--afro); }
+.deep { --color-genero: var(--deep); }
+.organic { --color-genero: var(--organic); }
+.punto { background: var(--color-genero); }
+section#detalle { padding: 20px 24px; display: grid; gap: 18px; align-content: start; }
+.elegida h2 { font-family: var(--fuente-titulo); font-size: 20px; margin: 4px 0 0; text-wrap: balance; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--color-genero);
+  color: var(--color-genero);
+  white-space: nowrap;
+}
+.columnas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.columna {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.columna h3 { margin: 0; font-family: var(--fuente-titulo); font-size: 16px; }
+.columna .sub { margin: 0; font-size: 13px; color: var(--texto-suave); }
+ol.vecinos { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+ol.vecinos li {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  gap: 4px 10px;
+  align-items: baseline;
+  padding: 6px 0;
+  border-top: 1px solid var(--borde);
+}
+.rango { font-family: var(--fuente-mono); color: var(--texto-suave); font-size: 13px; }
+.titulo-vecina { cursor: pointer; background: none; border: 0; padding: 0; color: var(--texto); font: inherit; text-align: left; }
+.titulo-vecina:hover { color: var(--acento); text-decoration: underline; }
+.valor { font-family: var(--fuente-mono); font-variant-numeric: tabular-nums; font-size: 13px; }
+.barra { grid-column: 2 / 4; height: 4px; background: var(--borde); border-radius: 2px; overflow: hidden; }
+.barra span { display: block; height: 100%; background: var(--color-genero); }
+.meta { grid-column: 2 / 4; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.tambien { font-size: 12px; color: var(--texto-suave); }
+.nota { font-size: 13px; color: var(--texto-suave); margin: 0; max-width: 90ch; }
+@media (max-width: 760px) {
+  main { grid-template-columns: 1fr; }
+  nav { border-right: 0; border-bottom: 1px solid var(--borde); max-height: 50vh; overflow-y: auto; }
+  .columnas { grid-template-columns: 1fr; }
+  header, section#detalle { padding-left: 16px; padding-right: 16px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Canciones parecidas según MERT</h1>
+  <p class="explicacion">Para cada una de las 57 canciones del contenedor <code>djcopilot</code>, las 10 canciones con mayor similitud del coseno entre sus embeddings. El embedding de cada canción es la media de las capas del transformer de MERT (capas 1 a 12 en 95M y 1 a 24 en 330M), calculada sobre ventanas de 10 s. Elige una canción en la lista o pulsa una vecina para verla.</p>
+  <div class="resumen" id="resumen"></div>
+</header>
+<main>
+  <nav aria-label="Canciones">
+    <label for="buscar">Buscar por artista o título</label>
+    <input id="buscar" type="search" autocomplete="off" placeholder="p. ej. Volen Sentir">
+    <div id="lista"></div>
+  </nav>
+  <section id="detalle" aria-live="polite"></section>
+</main>
+<script>
+const DATOS = {"canciones": [{"ruta": "Afro House/Afrokillerz - West African (Extended Mix) [Sondela Recordings Ltd].aiff", "titulo": "Afrokillerz - West African (Extended Mix) [Sondela Recordings Ltd]", "genero": "Afro House"}, {"ruta": "Afro House/Culoe De Song - The Spiker (Manoo Abstrakt Remix) [Crosstown Rebels].aiff", "titulo": "Culoe De Song - The Spiker (Manoo Abstrakt Remix) [Crosstown Rebels]", "genero": "Afro House"}, {"ruta": "Afro House/DJEFF - WHY 3 (Original Mix) [Kazukuta Records].aiff", "titulo": "DJEFF - WHY 3 (Original Mix) [Kazukuta Records]", "genero": "Afro House"}, {"ruta": "Afro House/Double Drop - A Partir De Agora (Original Mix) [OLUMO].aiff", "titulo": "Double Drop - A Partir De Agora (Original Mix) [OLUMO]", "genero": "Afro House"}, {"ruta": "Afro House/Kabza De Small, DJ Maphorisa, Ami Faku, Jnr SA - Asibe Happy (Jnr SA Remix) [Sound African Recordings].aiff", "titulo": "Kabza De Small, DJ Maphorisa, Ami Faku, Jnr SA - Asibe Happy (Jnr SA Remix) [Sound African Recordings]", "genero": "Afro House"}, {"ruta": "Afro House/Lazarusman, Robin M, ELIF (TR) - Speak To Me (Pm Mix) [Ulu Records].aiff", "titulo": "Lazarusman, Robin M, ELIF (TR) - Speak To Me (Pm Mix) [Ulu Records]", "genero": "Afro House"}, {"ruta": "Afro House/MOSKA, GROSSOMODDO - Salseo (Extended Mix) [Make The Girls Dance Records].aiff", "titulo": "MOSKA, GROSSOMODDO - Salseo (Extended Mix) [Make The Girls Dance Records]", "genero": "Afro House"}, {"ruta": "Afro House/Mafikizolo, Oskido, Uhuru, Pierre Johnson - Khona (Extended Mix, Pierre Johnson & Simeon Remix) [Legend Live].aiff", "titulo": "Mafikizolo, Oskido, Uhuru, Pierre Johnson - Khona (Extended Mix, Pierre Johnson & Simeon Remix) [Legend Live]", "genero": "Afro House"}, {"ruta": "Afro House/Marieme, Yaans - Dangerous (Original Mix) [Yaans Music Production].aiff", "titulo": "Marieme, Yaans - Dangerous (Original Mix) [Yaans Music Production]", "genero": "Afro House"}, {"ruta": "Afro House/Meith, CLEIDO, dillan desai, Masilo The Healer, Remy Lowé - Chemical Messages (Meith Remix) [Sondela Recordings Ltd].aiff", "titulo": "Meith, CLEIDO, dillan desai, Masilo The Healer, Remy Lowé - Chemical Messages (Meith Remix) [Sondela Recordings Ltd]", "genero": "Afro House"}, {"ruta": "Afro House/Milius, PÆDE - Save You (Extended) [Klub Record].aiff", "titulo": "Milius, PÆDE - Save You (Extended) [Klub Record]", "genero": "Afro House"}, {"ruta": "Afro House/Monique Bingham, Black Coffee, Da Capo - Deep In The Bottom (of Africa Da Capo Touch Edit) [KLTR Music].aiff", "titulo": "Monique Bingham, Black Coffee, Da Capo - Deep In The Bottom (of Africa Da Capo Touch Edit) [KLTR Music]", "genero": "Afro House"}, {"ruta": "Afro House/Native P., Son Ross, C-Mart - Vision (Extended Mix) [Sodade].aiff", "titulo": "Native P., Son Ross, C-Mart - Vision (Extended Mix) [Sodade]", "genero": "Afro House"}, {"ruta": "Afro House/Paige, Innarius - Journey (Extended Mix) [LSF21+].aiff", "titulo": "Paige, Innarius - Journey (Extended Mix) [LSF21+]", "genero": "Afro House"}, {"ruta": "Afro House/Papa Wemba, Kitty Amor - Yolele (Original Mix) [Fontana].aiff", "titulo": "Papa Wemba, Kitty Amor - Yolele (Original Mix) [Fontana]", "genero": "Afro House"}, {"ruta": "Afro House/Roland Clark, Mshu - Africa Is Forever (Original Mix) [Rise Music].aiff", "titulo": "Roland Clark, Mshu - Africa Is Forever (Original Mix) [Rise Music]", "genero": "Afro House"}, {"ruta": "Afro House/Salif Keita, Caiiro - Madan (Extended) [Universal Music Division Decca Records France].aiff", "titulo": "Salif Keita, Caiiro - Madan (Extended) [Universal Music Division Decca Records France]", "genero": "Afro House"}, {"ruta": "Afro House/VERTIC - The Funk (Extended Mix) [TIIK RECORDS].aiff", "titulo": "VERTIC - The Funk (Extended Mix) [TIIK RECORDS]", "genero": "Afro House"}, {"ruta": "Afro House/Vanco - WOLF (EXTENDED MIX) [ALGRA II].aiff", "titulo": "Vanco - WOLF (EXTENDED MIX) [ALGRA II]", "genero": "Afro House"}, {"ruta": "Deep House/AMMÉ - Tell You (Original Mix) [Cecille].aiff", "titulo": "AMMÉ - Tell You (Original Mix) [Cecille]", "genero": "Deep House"}, {"ruta": "Deep House/Benjamin Fröhlich, dreamcastmoe - Last Night (Retromigration Remix) [Permanent Vacation].aiff", "titulo": "Benjamin Fröhlich, dreamcastmoe - Last Night (Retromigration Remix) [Permanent Vacation]", "genero": "Deep House"}, {"ruta": "Deep House/Dam Swindle, Allysha Joy - I Want You (DJ-Kicks Extended) [K7 Records].aiff", "titulo": "Dam Swindle, Allysha Joy - I Want You (DJ-Kicks Extended) [K7 Records]", "genero": "Deep House"}, {"ruta": "Deep House/Dust Yard, doradice. - Sharp Visors (Dilby Remix) [Bondage Music].aiff", "titulo": "Dust Yard, doradice. - Sharp Visors (Dilby Remix) [Bondage Music]", "genero": "Deep House"}, {"ruta": "Deep House/Gramrcy - Pluq (Original Mix) [Peach Discs].aiff", "titulo": "Gramrcy - Pluq (Original Mix) [Peach Discs]", "genero": "Deep House"}, {"ruta": "Deep House/Jimpster - What U R (Original Mix) [Freerange Records].aiff", "titulo": "Jimpster - What U R (Original Mix) [Freerange Records]", "genero": "Deep House"}, {"ruta": "Deep House/K-Lone - Have a few days off (Original Mix) [Wisdom Teeth].aiff", "titulo": "K-Lone - Have a few days off (Original Mix) [Wisdom Teeth]", "genero": "Deep House"}, {"ruta": "Deep House/K-Lone, Iglew - Tincture (Original Mix) [Aus Music].aiff", "titulo": "K-Lone, Iglew - Tincture (Original Mix) [Aus Music]", "genero": "Deep House"}, {"ruta": "Deep House/LondonGround - Timeless (Extended Mix) [8Bit].aiff", "titulo": "LondonGround - Timeless (Extended Mix) [8Bit]", "genero": "Deep House"}, {"ruta": "Deep House/M-High - What's Going On (Original Mix) [Up The Stuss].aiff", "titulo": "M-High - What's Going On (Original Mix) [Up The Stuss]", "genero": "Deep House"}, {"ruta": "Deep House/Mathew Jonson, Palms Trax - Kaila's Photos (Original Mix) [fabric Records].aiff", "titulo": "Mathew Jonson, Palms Trax - Kaila's Photos (Original Mix) [fabric Records]", "genero": "Deep House"}, {"ruta": "Deep House/Midas Field, Marijn Jansen - What We Got (Original Mix) [tszr].aiff", "titulo": "Midas Field, Marijn Jansen - What We Got (Original Mix) [tszr]", "genero": "Deep House"}, {"ruta": "Deep House/Mihai Popoviciu - Alone (Original Mix) [Berg Audio].aiff", "titulo": "Mihai Popoviciu - Alone (Original Mix) [Berg Audio]", "genero": "Deep House"}, {"ruta": "Deep House/Prunk - No More Waiting (Original Mix) [PIV].aiff", "titulo": "Prunk - No More Waiting (Original Mix) [PIV]", "genero": "Deep House"}, {"ruta": "Deep House/Riva Starr, Andre Espeut, Close Counters - Push Your Luck (Original Mix) [Heist Recordings].aiff", "titulo": "Riva Starr, Andre Espeut, Close Counters - Push Your Luck (Original Mix) [Heist Recordings]", "genero": "Deep House"}, {"ruta": "Deep House/Voigtmann - Loading Complete (Original Mix) [Fuse London].aiff", "titulo": "Voigtmann - Loading Complete (Original Mix) [Fuse London]", "genero": "Deep House"}, {"ruta": "Deep House/Watchers (UK) - Bomb Threat (Original Mix) [Locus].aiff", "titulo": "Watchers (UK) - Bomb Threat (Original Mix) [Locus]", "genero": "Deep House"}, {"ruta": "Deep House/Yuvèe - Losing My Sanity (Extended Mix) [Anjunadeep Explorations].aiff", "titulo": "Yuvèe - Losing My Sanity (Extended Mix) [Anjunadeep Explorations]", "genero": "Deep House"}, {"ruta": "Organic House/Alcatraz - Giv Me Luv (Sébastien Léger Remix) [Yoshitoshi Recordings].aiff", "titulo": "Alcatraz - Giv Me Luv (Sébastien Léger Remix) [Yoshitoshi Recordings]", "genero": "Organic House"}, {"ruta": "Organic House/Artic White - Summer 98 (Extended Mix) [Univack].aiff", "titulo": "Artic White - Summer 98 (Extended Mix) [Univack]", "genero": "Organic House"}, {"ruta": "Organic House/Barberio - Isabella (Original Mix) [All Day I Dream].aiff", "titulo": "Barberio - Isabella (Original Mix) [All Day I Dream]", "genero": "Organic House"}, {"ruta": "Organic House/Bonafique, KADI (IL) - Trippo (Extended Mix) [Get Physical Music].aiff", "titulo": "Bonafique, KADI (IL) - Trippo (Extended Mix) [Get Physical Music]", "genero": "Organic House"}, {"ruta": "Organic House/Carlos Gatto, Mateo Tapia - Sharp Hook (Original Mix) [Melody Of the Soul].aiff", "titulo": "Carlos Gatto, Mateo Tapia - Sharp Hook (Original Mix) [Melody Of the Soul]", "genero": "Organic House"}, {"ruta": "Organic House/DAVI - Chord Syndrome (Extended Mix) [8Bit].aiff", "titulo": "DAVI - Chord Syndrome (Extended Mix) [8Bit]", "genero": "Organic House"}, {"ruta": "Organic House/Eli Nissan, Emi Galvan - Padua (Original Mix) [Moments].aiff", "titulo": "Eli Nissan, Emi Galvan - Padua (Original Mix) [Moments]", "genero": "Organic House"}, {"ruta": "Organic House/Fernando Olaya - Memory of the Universe (Extended Mix) [Amulanga].aiff", "titulo": "Fernando Olaya - Memory of the Universe (Extended Mix) [Amulanga]", "genero": "Organic House"}, {"ruta": "Organic House/Guy Mantzur, Yuvèe - Stairway (Original Mix) [All Day I Dream].aiff", "titulo": "Guy Mantzur, Yuvèe - Stairway (Original Mix) [All Day I Dream]", "genero": "Organic House"}, {"ruta": "Organic House/KOYENGA - Indigo (Extended Mix) [Sounds Of Sirin].aiff", "titulo": "KOYENGA - Indigo (Extended Mix) [Sounds Of Sirin]", "genero": "Organic House"}, {"ruta": "Organic House/Lily Papas, Planet Of Souls - One (PROFF Extended Reshuffle) [Anjunachill].aiff", "titulo": "Lily Papas, Planet Of Souls - One (PROFF Extended Reshuffle) [Anjunachill]", "genero": "Organic House"}, {"ruta": "Organic House/MAIl - Daylight (Extended Mix) [Sounds Of Sirin].aiff", "titulo": "MAIl - Daylight (Extended Mix) [Sounds Of Sirin]", "genero": "Organic House"}, {"ruta": "Organic House/MI.LA - Poem (Original Mix) [Journey of the Soul].aiff", "titulo": "MI.LA - Poem (Original Mix) [Journey of the Soul]", "genero": "Organic House"}, {"ruta": "Organic House/Mike Griego, Volen Sentir - You Will Never Know (Mike Griego Remix) [Shanti Mansion].aiff", "titulo": "Mike Griego, Volen Sentir - You Will Never Know (Mike Griego Remix) [Shanti Mansion]", "genero": "Organic House"}, {"ruta": "Organic House/Nicolas Viana - Analog Dream (Extended Mix) [Univack].aiff", "titulo": "Nicolas Viana - Analog Dream (Extended Mix) [Univack]", "genero": "Organic House"}, {"ruta": "Organic House/Passenger 10 - Serotonin (Extended Mix) [Enormous Tunes].aiff", "titulo": "Passenger 10 - Serotonin (Extended Mix) [Enormous Tunes]", "genero": "Organic House"}, {"ruta": "Organic House/Reaching Planets - Selling Your Dreams (Original Mix) [Patchouli Deep].aiff", "titulo": "Reaching Planets - Selling Your Dreams (Original Mix) [Patchouli Deep]", "genero": "Organic House"}, {"ruta": "Organic House/Taleman - Acid Aikido (Extended Mix) [Try To Find Sound].aiff", "titulo": "Taleman - Acid Aikido (Extended Mix) [Try To Find Sound]", "genero": "Organic House"}, {"ruta": "Organic House/Trilucid - One Day At A Time (Tim Green Extended Remix) [Colorize (Enhanced)].aiff", "titulo": "Trilucid - One Day At A Time (Tim Green Extended Remix) [Colorize (Enhanced)]", "genero": "Organic House"}, {"ruta": "Organic House/Volen Sentir - Havada (Etne Remix) [Shanti Mansion].aiff", "titulo": "Volen Sentir - Havada (Etne Remix) [Shanti Mansion]", "genero": "Organic House"}], "modelos": {"95M": {"capas": 13, "dimension": 768, "similitud_minima": 0.7917002439498901, "similitud_maxima": 0.97509765625, "mismo_genero_5": 0.5578947368421052, "mismo_genero_5_por_genero": {"Afro House": 0.2526315789473685, "Deep House": 0.5555555555555556, "Organic House": 0.85}, "vecinos": [[[22, 0.9563], [49, 0.9491], [36, 0.944], [56, 0.9427], [37, 0.9408], [55, 0.9401], [12, 0.939], [54, 0.9386], [10, 0.935], [45, 0.9346]], [[5, 0.929], [30, 0.9193], [18, 0.9185], [24, 0.9158], [6, 0.9157], [28, 0.913], [37, 0.9108], [50, 0.9097], [12, 0.9067], [15, 0.9067]], [[36, 0.9427], [19, 0.941], [22, 0.9355], [12, 0.934], [0, 0.9326], [28, 0.9313], [34, 0.9292], [55, 0.9291], [30, 0.9271], [50, 0.9261]], [[55, 0.9538], [37, 0.9507], [36, 0.9496], [39, 0.9437], [38, 0.94], [47, 0.9387], [41, 0.9376], [34, 0.9357], [52, 0.9354], [6, 0.9353]], [[14, 0.9373], [47, 0.9253], [36, 0.9233], [11, 0.9202], [48, 0.9135], [32, 0.9117], [12, 0.9104], [5, 0.9091], [7, 0.9086], [23, 0.9086]], [[40, 0.9432], [6, 0.9403], [45, 0.9385], [33, 0.937], [46, 0.9368], [28, 0.9365], [50, 0.9358], [56, 0.9334], [48, 0.9332], [27, 0.9326]], [[30, 0.9619], [40, 0.9604], [39, 0.9524], [31, 0.9499], [27, 0.9499], [24, 0.9493], [14, 0.9488], [36, 0.948], [53, 0.9428], [28, 0.9412]], [[15, 0.9435], [17, 0.943], [28, 0.9304], [3, 0.9291], [24, 0.9266], [36, 0.925], [23, 0.9215], [53, 0.9194], [14, 0.919], [6, 0.9175]], [[39, 0.9624], [37, 0.9494], [38, 0.9439], [50, 0.9434], [48, 0.9424], [36, 0.9416], [43, 0.941], [47, 0.9378], [31, 0.9376], [33, 0.936]], [[37, 0.9409], [38, 0.9323], [52, 0.9294], [51, 0.9288], [50, 0.9224], [39, 0.9224], [15, 0.922], [24, 0.9211], [8, 0.9203], [44, 0.92]], [[50, 0.9421], [48, 0.9416], [31, 0.939], [39, 0.9377], [45, 0.9377], [43, 0.9376], [0, 0.935], [46, 0.9345], [37, 0.9307], [18, 0.9303]], [[39, 0.9323], [14, 0.9251], [8, 0.9245], [6, 0.9224], [16, 0.9221], [4, 0.9202], [48, 0.9189], [37, 0.9182], [40, 0.9161], [36, 0.9155]], [[56, 0.9552], [22, 0.9508], [45, 0.9454], [50, 0.9437], [49, 0.9416], [0, 0.939], [37, 0.9389], [54, 0.9386], [47, 0.9385], [42, 0.9382]], [[28, 0.9287], [53, 0.9284], [39, 0.9219], [38, 0.9214], [50, 0.9205], [48, 0.9191], [36, 0.9179], [6, 0.916], [40, 0.9135], [33, 0.9128]], [[6, 0.9488], [47, 0.9427], [4, 0.9373], [30, 0.9349], [36, 0.9344], [21, 0.9331], [39, 0.932], [40, 0.9315], [53, 0.9304], [50, 0.9298]], [[7, 0.9435], [39, 0.9397], [44, 0.9378], [24, 0.937], [38, 0.9356], [33, 0.9353], [6, 0.9345], [28, 0.9344], [52, 0.9332], [53, 0.9324]], [[39, 0.9456], [8, 0.9338], [48, 0.9277], [24, 0.9269], [38, 0.9266], [52, 0.9256], [25, 0.9221], [11, 0.9221], [21, 0.9216], [50, 0.9198]], [[7, 0.943], [28, 0.9266], [5, 0.9154], [15, 0.9145], [2, 0.9123], [47, 0.9105], [36, 0.91], [4, 0.9074], [24, 0.9069], [39, 0.9054]], [[39, 0.9358], [40, 0.9354], [37, 0.9338], [10, 0.9303], [43, 0.9294], [0, 0.9292], [44, 0.9279], [45, 0.9277], [24, 0.9277], [33, 0.9256]], [[30, 0.9602], [34, 0.9524], [28, 0.9494], [31, 0.9483], [22, 0.9446], [27, 0.942], [2, 0.941], [21, 0.9405], [33, 0.9396], [37, 0.938]], [[34, 0.955], [28, 0.9446], [30, 0.9415], [36, 0.9399], [22, 0.9385], [33, 0.9381], [31, 0.9362], [27, 0.9361], [19, 0.9355], [50, 0.9352]], [[33, 0.9503], [56, 0.9477], [30, 0.944], [22, 0.9439], [52, 0.9421], [19, 0.9405], [44, 0.9373], [34, 0.9356], [41, 0.9355], [49, 0.9349]], [[35, 0.9606], [56, 0.9598], [49, 0.9582], [0, 0.9563], [54, 0.9541], [36, 0.9535], [12, 0.9508], [42, 0.9504], [34, 0.9497], [28, 0.9497]], [[36, 0.9433], [37, 0.9374], [39, 0.9373], [28, 0.9363], [34, 0.9363], [54, 0.9347], [47, 0.9308], [3, 0.9307], [45, 0.9303], [21, 0.9294]], [[39, 0.955], [6, 0.9493], [30, 0.9468], [28, 0.9459], [38, 0.945], [31, 0.9444], [37, 0.9416], [40, 0.9398], [33, 0.9392], [53, 0.9387]], [[39, 0.9295], [16, 0.9221], [8, 0.9213], [53, 0.9163], [6, 0.9139], [28, 0.9136], [11, 0.9122], [49, 0.9101], [33, 0.9076], [13, 0.9064]], [[30, 0.9332], [21, 0.9135], [6, 0.9118], [33, 0.9086], [46, 0.9026], [31, 0.9011], [19, 0.8985], [40, 0.8964], [15, 0.8959], [27, 0.8956]], [[6, 0.9499], [56, 0.9452], [40, 0.9443], [19, 0.942], [31, 0.94], [36, 0.9395], [30, 0.9393], [50, 0.9379], [20, 0.9361], [28, 0.9354]], [[30, 0.9549], [34, 0.9502], [22, 0.9497], [19, 0.9494], [33, 0.949], [36, 0.9468], [24, 0.9459], [20, 0.9446], [6, 0.9412], [39, 0.9406]], [[22, 0.9276], [49, 0.9224], [56, 0.9219], [42, 0.9184], [39, 0.9179], [8, 0.9153], [35, 0.9151], [52, 0.9144], [21, 0.914], [55, 0.9126]], [[6, 0.9619], [19, 0.9602], [31, 0.9591], [28, 0.9549], [33, 0.9538], [39, 0.9508], [46, 0.9502], [50, 0.9498], [34, 0.9474], [24, 0.9468]], [[30, 0.9591], [39, 0.9563], [37, 0.9545], [44, 0.9501], [6, 0.9499], [50, 0.9492], [19, 0.9483], [33, 0.9477], [45, 0.9469], [46, 0.9466]], [[34, 0.9477], [36, 0.944], [49, 0.937], [22, 0.9331], [20, 0.9296], [23, 0.9273], [28, 0.9253], [56, 0.9225], [40, 0.9218], [37, 0.9205]], [[30, 0.9538], [46, 0.9523], [21, 0.9503], [45, 0.9491], [28, 0.949], [50, 0.9489], [39, 0.9485], [31, 0.9477], [56, 0.9459], [22, 0.9437]], [[20, 0.955], [36, 0.955], [19, 0.9524], [28, 0.9502], [22, 0.9497], [32, 0.9477], [30, 0.9474], [35, 0.9469], [31, 0.9448], [37, 0.9384]], [[36, 0.9625], [22, 0.9606], [41, 0.9559], [54, 0.9505], [56, 0.9475], [34, 0.9469], [49, 0.9436], [39, 0.9429], [55, 0.9423], [46, 0.9419]], [[41, 0.9628], [35, 0.9625], [55, 0.9574], [56, 0.9569], [39, 0.9568], [34, 0.955], [22, 0.9535], [54, 0.9532], [42, 0.9531], [37, 0.9529]], [[39, 0.9669], [55, 0.9616], [45, 0.9611], [50, 0.9568], [43, 0.9556], [31, 0.9545], [36, 0.9529], [54, 0.9517], [3, 0.9507], [56, 0.95]], [[39, 0.963], [55, 0.9587], [52, 0.956], [51, 0.9494], [37, 0.9469], [44, 0.9466], [36, 0.9458], [24, 0.945], [45, 0.9439], [8, 0.9439]], [[37, 0.9669], [45, 0.9634], [38, 0.963], [8, 0.9624], [48, 0.9576], [36, 0.9568], [54, 0.9563], [31, 0.9563], [43, 0.9552], [50, 0.9551]], [[6, 0.9604], [49, 0.9597], [39, 0.9529], [56, 0.9511], [36, 0.9486], [55, 0.9463], [22, 0.9463], [52, 0.9449], [27, 0.9443], [5, 0.9432]], [[36, 0.9628], [35, 0.9559], [56, 0.9547], [54, 0.954], [42, 0.9502], [55, 0.9458], [51, 0.9443], [37, 0.9441], [22, 0.9431], [38, 0.943]], [[56, 0.9677], [51, 0.9537], [36, 0.9531], [22, 0.9504], [41, 0.9502], [55, 0.943], [52, 0.9408], [35, 0.9401], [31, 0.94], [38, 0.939]], [[45, 0.9583], [54, 0.9568], [37, 0.9556], [39, 0.9552], [46, 0.9516], [48, 0.9494], [50, 0.9478], [44, 0.946], [8, 0.941], [10, 0.9376]], [[46, 0.9598], [45, 0.9544], [54, 0.9535], [39, 0.952], [50, 0.9519], [31, 0.9501], [38, 0.9466], [56, 0.9461], [43, 0.946], [48, 0.9439]], [[54, 0.9751], [48, 0.9702], [46, 0.97], [56, 0.9672], [50, 0.9663], [39, 0.9634], [37, 0.9611], [43, 0.9583], [44, 0.9544], [22, 0.9496]], [[45, 0.97], [50, 0.9644], [44, 0.9598], [54, 0.959], [33, 0.9523], [43, 0.9516], [48, 0.9509], [56, 0.9508], [30, 0.9502], [39, 0.9489]], [[56, 0.9569], [52, 0.9541], [39, 0.9525], [55, 0.9512], [37, 0.9487], [45, 0.948], [36, 0.9448], [48, 0.9433], [38, 0.9431], [14, 0.9427]], [[45, 0.9702], [39, 0.9576], [50, 0.9556], [46, 0.9509], [54, 0.9501], [43, 0.9494], [56, 0.9481], [37, 0.9471], [44, 0.9439], [47, 0.9433]], [[40, 0.9597], [22, 0.9582], [56, 0.9551], [55, 0.9519], [0, 0.9491], [45, 0.9469], [39, 0.9453], [35, 0.9436], [36, 0.9434], [54, 0.9433]], [[45, 0.9663], [46, 0.9644], [37, 0.9568], [48, 0.9556], [39, 0.9551], [44, 0.9519], [54, 0.9515], [30, 0.9498], [31, 0.9492], [33, 0.9489]], [[42, 0.9537], [56, 0.9501], [38, 0.9494], [52, 0.949], [55, 0.9447], [41, 0.9443], [36, 0.9393], [12, 0.9355], [35, 0.9353], [22, 0.9351]], [[38, 0.956], [47, 0.9541], [51, 0.949], [39, 0.9474], [56, 0.9469], [55, 0.9457], [40, 0.9449], [21, 0.9421], [42, 0.9408], [49, 0.9404]], [[6, 0.9428], [24, 0.9387], [40, 0.9375], [39, 0.9364], [15, 0.9324], [14, 0.9304], [28, 0.9302], [38, 0.9301], [52, 0.9289], [13, 0.9284]], [[45, 0.9751], [56, 0.9644], [46, 0.959], [43, 0.9568], [39, 0.9563], [22, 0.9541], [41, 0.954], [44, 0.9535], [36, 0.9532], [37, 0.9517]], [[37, 0.9616], [56, 0.9593], [38, 0.9587], [36, 0.9574], [39, 0.9543], [3, 0.9538], [49, 0.9519], [47, 0.9512], [54, 0.9496], [45, 0.9474]], [[42, 0.9677], [45, 0.9672], [54, 0.9644], [22, 0.9598], [55, 0.9593], [47, 0.9569], [36, 0.9569], [12, 0.9552], [49, 0.9551], [41, 0.9547]]]}, "330M": {"capas": 25, "dimension": 1024, "similitud_minima": 0.9068243503570557, "similitud_maxima": 0.9956451654434204, "mismo_genero_5": 0.4947368421052632, "mismo_genero_5_por_genero": {"Afro House": 0.2210526315789474, "Deep House": 0.43333333333333335, "Organic House": 0.8100000000000002}, "vecinos": [[[22, 0.9926], [51, 0.9907], [39, 0.9907], [40, 0.9899], [10, 0.9899], [33, 0.9897], [49, 0.9896], [36, 0.989], [31, 0.9889], [35, 0.9887]], [[24, 0.9844], [6, 0.9825], [37, 0.9819], [43, 0.9808], [55, 0.9801], [15, 0.9798], [28, 0.9794], [47, 0.9793], [30, 0.9787], [3, 0.9781]], [[36, 0.9887], [54, 0.9875], [22, 0.9874], [41, 0.9873], [46, 0.9869], [0, 0.9869], [28, 0.986], [39, 0.986], [50, 0.9859], [35, 0.9858]], [[37, 0.9892], [55, 0.9879], [47, 0.9869], [43, 0.9866], [48, 0.9855], [6, 0.985], [44, 0.9848], [9, 0.9847], [12, 0.9845], [15, 0.9842]], [[47, 0.9816], [48, 0.9795], [14, 0.9772], [7, 0.9761], [32, 0.9751], [12, 0.9738], [3, 0.9737], [11, 0.9729], [38, 0.9703], [55, 0.9693]], [[56, 0.9901], [22, 0.99], [40, 0.9899], [50, 0.9895], [28, 0.9894], [54, 0.9892], [51, 0.9891], [49, 0.989], [46, 0.9888], [42, 0.9884]], [[30, 0.9922], [50, 0.9914], [39, 0.9898], [42, 0.9897], [51, 0.9896], [22, 0.9895], [19, 0.9894], [24, 0.9888], [37, 0.9884], [43, 0.9884]], [[3, 0.984], [47, 0.9826], [9, 0.9809], [15, 0.9807], [17, 0.9789], [48, 0.9783], [37, 0.9782], [14, 0.9772], [55, 0.9769], [11, 0.9768]], [[39, 0.9907], [38, 0.9896], [53, 0.9887], [47, 0.9883], [45, 0.988], [52, 0.988], [43, 0.9877], [11, 0.9875], [44, 0.9872], [41, 0.9871]], [[37, 0.99], [52, 0.9898], [15, 0.9885], [44, 0.9882], [43, 0.9882], [38, 0.9881], [55, 0.988], [28, 0.9876], [47, 0.9871], [8, 0.987]], [[22, 0.9899], [0, 0.9899], [40, 0.989], [31, 0.9887], [42, 0.9881], [49, 0.9875], [33, 0.9873], [50, 0.9873], [46, 0.9872], [51, 0.9871]], [[8, 0.9875], [9, 0.9868], [39, 0.9862], [37, 0.9862], [14, 0.9855], [55, 0.9853], [47, 0.9849], [43, 0.9849], [53, 0.9848], [38, 0.9847]], [[56, 0.9917], [45, 0.9914], [55, 0.9911], [50, 0.9906], [44, 0.9898], [48, 0.9895], [37, 0.9883], [47, 0.9882], [38, 0.9881], [27, 0.9878]], [[41, 0.988], [38, 0.9863], [53, 0.9862], [28, 0.9846], [36, 0.9846], [50, 0.9845], [39, 0.9845], [2, 0.9841], [8, 0.9841], [42, 0.9832]], [[47, 0.9907], [12, 0.987], [38, 0.9869], [8, 0.9866], [55, 0.9863], [48, 0.9858], [11, 0.9855], [50, 0.9853], [37, 0.985], [53, 0.9845]], [[39, 0.9896], [28, 0.9888], [44, 0.9886], [9, 0.9885], [52, 0.9879], [21, 0.9878], [53, 0.9871], [6, 0.9871], [24, 0.9867], [50, 0.9863]], [[39, 0.9874], [8, 0.9847], [29, 0.9839], [21, 0.983], [0, 0.9816], [40, 0.9804], [25, 0.9803], [52, 0.9803], [53, 0.98], [33, 0.9799]], [[9, 0.9831], [28, 0.9826], [45, 0.9812], [11, 0.9808], [18, 0.9808], [47, 0.9805], [55, 0.9801], [38, 0.9792], [53, 0.9792], [37, 0.979]], [[44, 0.9884], [55, 0.9881], [40, 0.9877], [52, 0.9871], [43, 0.9866], [56, 0.9863], [39, 0.9861], [0, 0.9857], [45, 0.9851], [8, 0.9851]], [[30, 0.9918], [6, 0.9894], [22, 0.989], [42, 0.9878], [51, 0.9877], [31, 0.9875], [28, 0.9865], [50, 0.9864], [21, 0.986], [27, 0.9856]], [[34, 0.9912], [31, 0.9882], [41, 0.988], [36, 0.9879], [50, 0.9875], [22, 0.987], [51, 0.9866], [56, 0.9864], [44, 0.9859], [49, 0.9856]], [[56, 0.992], [42, 0.9918], [39, 0.99], [50, 0.9896], [22, 0.9895], [44, 0.9891], [45, 0.9889], [28, 0.9883], [33, 0.9882], [49, 0.9882]], [[46, 0.9938], [31, 0.9931], [54, 0.9928], [56, 0.9926], [0, 0.9926], [51, 0.9926], [42, 0.9924], [35, 0.9924], [50, 0.992], [33, 0.992]], [[37, 0.9902], [45, 0.9885], [55, 0.9868], [44, 0.9865], [50, 0.9863], [28, 0.9863], [41, 0.9862], [47, 0.9862], [54, 0.9862], [43, 0.9861]], [[39, 0.9902], [43, 0.989], [6, 0.9888], [37, 0.9882], [28, 0.9874], [55, 0.9871], [15, 0.9867], [40, 0.9862], [21, 0.9858], [42, 0.9857]], [[33, 0.9832], [35, 0.9822], [16, 0.9803], [46, 0.9789], [49, 0.9786], [40, 0.9776], [39, 0.9774], [2, 0.9769], [29, 0.9766], [36, 0.9766]], [[30, 0.9848], [29, 0.9839], [21, 0.9783], [46, 0.9769], [35, 0.9767], [6, 0.9753], [33, 0.9746], [24, 0.9743], [22, 0.9738], [31, 0.9734]], [[56, 0.9913], [42, 0.9901], [50, 0.9889], [51, 0.9881], [12, 0.9878], [40, 0.9875], [22, 0.9874], [5, 0.987], [6, 0.9863], [28, 0.9862]], [[42, 0.9904], [22, 0.99], [37, 0.9898], [39, 0.9896], [56, 0.9895], [5, 0.9894], [49, 0.9893], [50, 0.9891], [55, 0.9889], [15, 0.9888]], [[21, 0.9879], [39, 0.9861], [49, 0.9854], [30, 0.9851], [24, 0.9845], [40, 0.9843], [16, 0.9839], [26, 0.9839], [15, 0.9838], [28, 0.9837]], [[6, 0.9922], [19, 0.9918], [46, 0.9898], [22, 0.9897], [35, 0.9893], [31, 0.9889], [28, 0.9875], [50, 0.987], [42, 0.9866], [21, 0.9865]], [[22, 0.9931], [46, 0.992], [35, 0.9918], [34, 0.9911], [54, 0.991], [42, 0.9905], [36, 0.9903], [33, 0.9902], [41, 0.9891], [0, 0.9889]], [[45, 0.9833], [44, 0.9828], [48, 0.9827], [23, 0.9824], [41, 0.9822], [47, 0.9821], [8, 0.9816], [55, 0.9811], [37, 0.9804], [36, 0.9801]], [[46, 0.9922], [22, 0.992], [35, 0.9917], [31, 0.9902], [49, 0.9897], [0, 0.9897], [54, 0.989], [36, 0.9888], [40, 0.9885], [39, 0.9885]], [[36, 0.9913], [20, 0.9912], [31, 0.9911], [22, 0.9898], [35, 0.9898], [46, 0.9893], [41, 0.9891], [50, 0.9883], [28, 0.9877], [54, 0.9876]], [[46, 0.9939], [36, 0.9933], [22, 0.9924], [31, 0.9918], [33, 0.9917], [54, 0.9911], [41, 0.9904], [34, 0.9898], [49, 0.9897], [30, 0.9893]], [[41, 0.9949], [35, 0.9933], [54, 0.993], [46, 0.9922], [22, 0.9916], [34, 0.9913], [42, 0.9907], [31, 0.9903], [50, 0.9898], [56, 0.9895]], [[43, 0.9944], [55, 0.9935], [45, 0.993], [39, 0.9911], [50, 0.9911], [23, 0.9902], [44, 0.9901], [56, 0.99], [9, 0.99], [28, 0.9898]], [[55, 0.992], [39, 0.9907], [44, 0.9906], [45, 0.9903], [52, 0.9898], [47, 0.9897], [8, 0.9896], [48, 0.9889], [41, 0.9886], [56, 0.9885]], [[43, 0.9928], [45, 0.9924], [50, 0.992], [37, 0.9911], [22, 0.9911], [55, 0.9909], [56, 0.9908], [8, 0.9907], [0, 0.9907], [38, 0.9907]], [[49, 0.9921], [56, 0.9919], [42, 0.9908], [46, 0.9903], [0, 0.9899], [5, 0.9899], [39, 0.9897], [22, 0.9891], [35, 0.9891], [10, 0.989]], [[36, 0.9949], [54, 0.9933], [45, 0.9927], [44, 0.9921], [42, 0.9918], [56, 0.9913], [50, 0.9908], [35, 0.9904], [22, 0.9896], [46, 0.9891]], [[56, 0.9951], [22, 0.9924], [45, 0.9921], [54, 0.9919], [21, 0.9918], [41, 0.9918], [50, 0.9918], [51, 0.9914], [40, 0.9908], [36, 0.9907]], [[37, 0.9944], [39, 0.9928], [55, 0.992], [44, 0.9918], [45, 0.9911], [56, 0.9906], [50, 0.9906], [42, 0.9898], [47, 0.9892], [41, 0.9891]], [[56, 0.9933], [45, 0.9923], [41, 0.9921], [43, 0.9918], [50, 0.9913], [55, 0.9908], [42, 0.9906], [38, 0.9906], [39, 0.9902], [37, 0.9901]], [[56, 0.9956], [54, 0.9945], [55, 0.994], [50, 0.9932], [37, 0.993], [41, 0.9927], [39, 0.9924], [44, 0.9923], [42, 0.9921], [48, 0.9919]], [[35, 0.9939], [22, 0.9938], [54, 0.993], [36, 0.9922], [33, 0.9922], [31, 0.992], [49, 0.9914], [56, 0.9913], [42, 0.9905], [40, 0.9903]], [[48, 0.9916], [55, 0.9915], [52, 0.9911], [14, 0.9907], [45, 0.99], [38, 0.9897], [44, 0.9892], [43, 0.9892], [37, 0.9889], [8, 0.9883]], [[45, 0.9919], [47, 0.9916], [12, 0.9895], [44, 0.9894], [55, 0.989], [38, 0.9889], [43, 0.9889], [50, 0.9885], [56, 0.9882], [37, 0.9881]], [[40, 0.9921], [56, 0.9916], [46, 0.9914], [22, 0.9908], [45, 0.9907], [50, 0.9905], [33, 0.9897], [35, 0.9897], [0, 0.9896], [28, 0.9893]], [[56, 0.9936], [45, 0.9932], [22, 0.992], [39, 0.992], [42, 0.9918], [6, 0.9914], [44, 0.9913], [37, 0.9911], [41, 0.9908], [54, 0.9907]], [[22, 0.9926], [42, 0.9914], [56, 0.9911], [0, 0.9907], [50, 0.9904], [6, 0.9896], [44, 0.9893], [54, 0.9892], [5, 0.9891], [39, 0.989]], [[47, 0.9911], [9, 0.9898], [38, 0.9898], [55, 0.989], [44, 0.9887], [8, 0.988], [15, 0.9879], [21, 0.9877], [56, 0.9876], [40, 0.9872]], [[8, 0.9887], [38, 0.9882], [15, 0.9871], [52, 0.9869], [39, 0.9867], [13, 0.9862], [24, 0.9855], [11, 0.9848], [9, 0.9847], [21, 0.9846]], [[45, 0.9945], [56, 0.9934], [41, 0.9933], [36, 0.993], [46, 0.993], [22, 0.9928], [42, 0.9919], [35, 0.9911], [31, 0.991], [50, 0.9907]], [[45, 0.994], [37, 0.9935], [56, 0.9927], [38, 0.992], [43, 0.992], [47, 0.9915], [12, 0.9911], [39, 0.9909], [44, 0.9908], [50, 0.9905]], [[45, 0.9956], [42, 0.9951], [50, 0.9936], [54, 0.9934], [44, 0.9933], [55, 0.9927], [22, 0.9926], [21, 0.992], [40, 0.9919], [12, 0.9917]]]}}, "azar": {"Afro House": 0.32142857142857145, "Deep House": 0.30357142857142855, "Organic House": 0.3392857142857143}, "azar_total": 0.3220551378446116};
+
+const CLASE_GENERO = { "Afro House": "afro", "Deep House": "deep", "Organic House": "organic" };
+const formato = (x, d) => x.toLocaleString("es-ES", { minimumFractionDigits: d, maximumFractionDigits: d });
+const escapar = t => t.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const chip = g => `<span class="chip ${CLASE_GENERO[g] || ""}"><span class="punto"></span>${escapar(g)}</span>`;
+
+function pintarResumen() {
+  const tarjetas = ["95M", "330M"].map(m => {
+    const d = DATOS.modelos[m];
+    const porGenero = Object.entries(d.mismo_genero_5_por_genero)
+      .map(([g, v]) => `${escapar(g)} ${formato(v, 2)}`).join(" · ");
+    return `<div class="tarjeta"><span class="etiqueta">MERT-v1-${m}: de las 5 más parecidas, del mismo género</span>
+      <span class="cifra">${formato(d.mismo_genero_5 * 100, 1)} %</span>
+      <span class="detalle">${porGenero}</span></div>`;
+  });
+  tarjetas.push(`<div class="tarjeta"><span class="etiqueta">Mismo género al azar</span>
+    <span class="cifra">${formato(DATOS.azar_total * 100, 1)} %</span>
+    <span class="detalle">${Object.keys(DATOS.azar).map(g => `${DATOS.canciones.filter(c => c.genero === g).length} ${escapar(g)}`).join(" · ")}</span></div>`);
+  document.getElementById("resumen").innerHTML = tarjetas.join("");
+}
+
+let elegida = 0;
+
+function pintarLista() {
+  const filtro = document.getElementById("buscar").value.trim().toLowerCase();
+  const porGenero = {};
+  DATOS.canciones.forEach((c, i) => {
+    if (filtro && !c.titulo.toLowerCase().includes(filtro)) return;
+    (porGenero[c.genero] ||= []).push(i);
+  });
+  const generos = Object.keys(porGenero).sort();
+  document.getElementById("lista").innerHTML = generos.length ? generos.map(g => `
+    <div class="grupo ${CLASE_GENERO[g] || ""}">
+      <h2><span class="punto"></span>${escapar(g)} (${porGenero[g].length})</h2>
+      <ul>${porGenero[g].map(i => `<li><button type="button" data-cancion="${i}" aria-current="${i === elegida}">${escapar(DATOS.canciones[i].titulo)}</button></li>`).join("")}</ul>
+    </div>`).join("") : `<p class="nota">Ninguna canción contiene «${escapar(filtro)}».</p>`;
+}
+
+function pintarColumna(modelo, i) {
+  const d = DATOS.modelos[modelo];
+  const otro = DATOS.modelos[modelo === "95M" ? "330M" : "95M"];
+  const delOtro = new Set(otro.vecinos[i].slice(0, 5).map(([j]) => j));
+  const rango = d.similitud_maxima - d.similitud_minima;
+  const filas = d.vecinos[i].map(([j, s], k) => {
+    const c = DATOS.canciones[j];
+    const ancho = Math.max(2, (s - d.similitud_minima) / rango * 100);
+    return `<li class="${CLASE_GENERO[c.genero] || ""}">
+      <span class="rango">${k + 1}</span>
+      <button type="button" class="titulo-vecina" data-cancion="${j}">${escapar(c.titulo)}</button>
+      <span class="valor">${formato(s, 4)}</span>
+      <div class="barra" aria-hidden="true"><span style="width:${ancho.toFixed(1)}%"></span></div>
+      <div class="meta">${chip(c.genero)}${k < 5 && delOtro.has(j) ? `<span class="tambien">también entre las 5 primeras con ${modelo === "95M" ? "330M" : "95M"}</span>` : ""}</div>
+    </li>`;
+  }).join("");
+  return `<div class="columna">
+    <h3>MERT-v1-${modelo}</h3>
+    <p class="sub">${d.capas - 1} capas de ${d.dimension} valores. Similitud entre todas las parejas: de ${formato(d.similitud_minima, 4)} a ${formato(d.similitud_maxima, 4)}.</p>
+    <ol class="vecinos">${filas}</ol>
+  </div>`;
+}
+
+function elegir(i) {
+  elegida = i;
+  const c = DATOS.canciones[i];
+  document.getElementById("detalle").innerHTML = `
+    <div class="elegida">${chip(c.genero)}<h2>${escapar(c.titulo)}</h2></div>
+    <div class="columnas">${pintarColumna("95M", i)}${pintarColumna("330M", i)}</div>
+    <p class="nota">La barra sitúa cada similitud entre la mínima y la máxima de todas las parejas de canciones de ese modelo, porque los valores de 330M están todos por encima de 0,90 y sin escalar no se distinguen. Los dos modelos no son comparables por su valor absoluto, solo por el orden.</p>`;
+  pintarLista();
+}
+
+document.getElementById("buscar").addEventListener("input", pintarLista);
+document.addEventListener("click", e => {
+  const boton = e.target.closest("[data-cancion]");
+  if (!boton) return;
+  elegir(Number(boton.dataset.cancion));
+  if (boton.classList.contains("titulo-vecina")) window.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+});
+
+pintarResumen();
+elegir(Math.max(0, DATOS.canciones.findIndex(c => c.titulo.startsWith("Volen Sentir - Havada"))));
+</script>
+</body>
+</html>
